@@ -8,13 +8,14 @@ export default function Weather() {
 
   const [weatherData, setWeatherData] = useState(null)
   const [wicon, setWicon] = useState('')
+  const [errorMessage, setErrorMessage] = useState("")
 
   const api_key = "dd94f859a0e52d6e4767fddf735f04a7"
 
   const search = async () => {
     const cityName = document.getElementsByClassName("cityInput")[0].value
     if (cityName === "") {
-      alert("Please enter a city")
+      setErrorMessage("Enter a city name!")
       return
     }
 
@@ -22,24 +23,41 @@ export default function Weather() {
 
     const response = await fetch(url)
     const data = await response.json()
+    console.log("data",data);
+    
+    if (!response.ok) {
+      setErrorMessage("Please check the place name and try again!")
+      return
+    }
 
     setWeatherData(data)
-
     setWicon(data.weather[0].icon)
+  }
 
+  const handleEnter = async (e) => {
+    if(e.key === 'Enter')
+      search();
+  }
+
+  const handleInputChange = () => {
+    setErrorMessage("")
   }
 
   return (
     <div className="container">
       <div className="top-bar">
-        <input type="text" className="cityInput" placeholder="Search for a place" />
+        <input type="text" className="cityInput" placeholder="Search for a place" onKeyDown={handleEnter} onChange={handleInputChange}/>
         <div className="search-icon">
-          <img src={search_icon} alt="icon" onClick={search} />
+          <img src={search_icon} alt="icon" onClick={search}/>
         </div>
       </div>
-      <div className="weather-image">
-        <img src={`https://openweathermap.org/img/wn/${wicon}@2x.png`} alt="Weather Icon" />
+      {errorMessage && <div className="error"> {errorMessage} </div>}
+      {
+        wicon && <div className="weather-image">
+        <img src={`https://openweathermap.org/img/wn/${wicon}@2x.png` ? `https://openweathermap.org/img/wn/${wicon}@2x.png` : null} alt="Weather Icon" />
       </div>
+      }
+      
       <div className="weather-temp">{weatherData && weatherData.main.temp}°C</div>
       <div className="weather-location">{weatherData && weatherData.name}</div>
       <div className="data-containers">
